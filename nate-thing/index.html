@@ -8,6 +8,15 @@
   </head>
   <body>
     <div class="center">
+      <p>Please select an Image: </p>
+      <br />
+      <select id="img-slct">
+        <option value="dog">Dog</option>
+        <option value="space">Space</option>
+        <option value="tree">Tree</option>
+      </select>
+    </div>
+    <div class="center">
       <canvas id="canvas"></canvas>
     </div>
     <div class="container">
@@ -41,20 +50,42 @@
       const b = document.getElementById("b");
       const a = document.getElementById("a");
 
-      // Image to be drawn on the canvas
-      const image = new Image();
-      image.src = "imgs/dog.png"; // Provide the path to your image here
+      // Function to select image source based on selected option
+      function selectSrc() {
+        const select = document.getElementById("img-slct");
+        let src = "";
+        if (select.value === "dog") {
+          src = "imgs/dog.png";
+        } else if (select.value === "space") {
+          src = "imgs/space.png";
+        } else if (select.value === "tree") {
+          src = "imgs/tree.png";
+        }
+        return src;
+      }
 
-      image.onload = function () {
-        // Set the canvas size to match the image
-        canvas.width = image.width;
-        canvas.height = image.height;
+      // Function to load the selected image onto the canvas
+      function loadImage() {
+        const src = selectSrc();
+        const image = new Image();
+        image.src = src;
 
-        // Draw the image to the canvas
-        ctx.drawImage(image, 0, 0);
-      };
+        image.onload = function () {
+          // Set the canvas size to match the image
+          canvas.width = image.width;
+          canvas.height = image.height;
 
-      // Function to get pixel color under the mouse
+          // Draw the image on the canvas
+          ctx.drawImage(image, 0, 0);
+        };
+      }
+
+      // Event listener for select element change
+      document.getElementById("img-slct").addEventListener("change", function () {
+        loadImage(); // Load a new image when a new option is selected
+      });
+
+      // Function to get the pixel color under the mouse
       function getPixelColor(event) {
         const x = event.offsetX;
         const y = event.offsetY;
@@ -64,13 +95,13 @@
           // Get the pixel data from the canvas at (x, y)
           const pixel = ctx.getImageData(x, y, 1, 1).data;
           console.log(pixel);
-          // Check the pixel data
 
           // Convert pixel data to RGB format
           const rp = pixel[0];
           const gp = pixel[1];
           const bp = pixel[2];
           const ap = pixel[3] / 255; // Alpha channel is between 0 and 1
+
           r.innerHTML = rp;
           g.innerHTML = gp;
           b.innerHTML = bp;
@@ -79,6 +110,8 @@
           console.log("Mouse is outside canvas bounds.");
         }
       }
+
+      // Function to convert RGBA to HSV (not used in this part of the code, but kept here)
       function rgbaToHsv(r, g, b) {
         r /= 255;
         g /= 255;
@@ -113,26 +146,7 @@
         return [h, s, v];
       }
 
-      function processImageData(ctx, x, y, width, height) {
-        const imageData = ctx.getImageData(x, y, width, height);
-        const data = imageData.data;
-
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          //const a = data[i + 3]; // Alpha is not used in HSV conversion
-
-          const hsv = rgbaToHsv(r, g, b);
-          // hsv is now an array [hue, saturation, value]
-          // You can now work with the HSV values, e.g., modify them or store them
-          data[i] = hsv[0] * 255; //Use hue for R
-          data[i + 1] = hsv[1] * 255; //Use saturation for G
-          data[i + 2] = hsv[2] * 255; //Use value for B
-        }
-        ctx.putImageData(imageData, x, y);
-      }
-
+      // Event listener for mouse movement on the canvas
       canvas.addEventListener("mousemove", getPixelColor);
     </script>
   </body>
